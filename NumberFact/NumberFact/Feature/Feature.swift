@@ -9,11 +9,19 @@ import ComposableArchitecture
 import Foundation
 
 struct Feature: ReducerProtocol {
+    @Dependency(\.numberFact) var numberFact
+}
+
+//MARK: - State
+extension Feature {
     struct State: Equatable {
         var count = 0
         var numberFactAlert: String?
     }
-    
+}
+
+//MARK: - Action
+extension Feature {
     enum Action: Equatable {
         case factAlertDismissed
         case decrementButtonTapped
@@ -21,7 +29,10 @@ struct Feature: ReducerProtocol {
         case numberFactButtonTapped
         case numberFactResponse(TaskResult<String>)
     }
-    
+}
+
+//MARK: - Reduce
+extension Feature {
     func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
         switch action {
         case .factAlertDismissed:
@@ -38,14 +49,7 @@ struct Feature: ReducerProtocol {
             
         case .numberFactButtonTapped:
             return .task { [count = state.count] in
-                await .numberFactResponse(
-                    TaskResult {
-                        String(
-                            decoding: try await URLSession.shared.data(from: URL(string: "http://numbersapi.com/\(count)/trivia")!).0,
-                            as: UTF8.self
-                        )
-                    }
-                )
+                await .numberFactResponse(TaskResult { try await self.numberFact.fetch(count) })
             }
             
         case let .numberFactResponse(.success(fact)):

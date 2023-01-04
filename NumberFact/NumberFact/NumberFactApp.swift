@@ -6,12 +6,18 @@
 //
 
 import SwiftUI
+import ComposableArchitecture
 
 @main
 struct NumberFactApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            FeatureView(
+                store: Store(
+                    initialState: Feature.State(),
+                    reducer: Feature()
+                )
+            )
         }
     }
 }
